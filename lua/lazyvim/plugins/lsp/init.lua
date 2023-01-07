@@ -73,23 +73,18 @@ return {
   {
     "jose-elias-alvarez/null-ls.nvim",
     event = "BufReadPre",
-    dependencies = { "mason.nvim" },
+    dependencies = { "mason.nvim", "jayp0521/mason-null-ls.nvim" },
     config = function()
       local nls = require("null-ls")
-      nls.setup({
-        sources = {
-          -- nls.builtins.formatting.prettierd,
-          nls.builtins.formatting.stylua,
-          nls.builtins.diagnostics.flake8,
-        },
-      })
+      nls.setup({ sources = {} })
+      require("mason-null-ls").setup_handlers()
     end,
   },
 
   -- cmdline tools and lsp servers
   {
-
     "williamboman/mason.nvim",
+    dependencies = { "jayp0521/mason-null-ls.nvim" },
     cmd = "Mason",
     keys = { { "<leader>cm", "<cmd>Mason<cr>", desc = "Mason" } },
     ensure_installed = {
@@ -100,13 +95,11 @@ return {
     },
     config = function(plugin)
       require("mason").setup()
-      local mr = require("mason-registry")
-      for _, tool in ipairs(plugin.ensure_installed) do
-        local p = mr.get_package(tool)
-        if not p:is_installed() then
-          p:install()
-        end
-      end
+      require("mason-null-ls").setup({
+        automatic_installation = true,
+        automatic_setup = true,
+        ensure_installed = plugin.ensure_installed,
+      })
     end,
   },
 }
